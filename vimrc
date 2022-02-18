@@ -23,10 +23,6 @@ set guioptions-=e
 " Set gvim font
 set guifont=Consolas:h14
 
-augroup gvimgroup
-    autocmd GUIEnter * simalt ~x
-augroup END
-
 " ------------------------------------------------------------------------------
 " BASIC SETUP
 " ------------------------------------------------------------------------------
@@ -211,7 +207,15 @@ endif
 " AUTO COMMANDS
 " ------------------------------------------------------------------------------
 
-augroup gvimgroup
+augroup vimrcgroup
+    " Automatically open quickfix if there are matches
+    autocmd!
+    autocmd QuickFixCmdPost [^l]* cwindow
+    autocmd QuickFixCmdPost l*    lwindow
+
+    " Maximize on gui startup
+    autocmd GUIEnter * simalt ~x
+
     " trim whitespaces on save
     autocmd BufWritePre * :%s/\s\+$//e
 augroup END
