@@ -184,25 +184,6 @@ noremap <F10> :cn<CR>
 noremap <F11> :cp<CR>
 noremap <F12> :cclose<CR>
 
-" -------------------------------------------------------------------------------
-" C/C++ PROGRAMMING
-" -------------------------------------------------------------------------------
-
-" If on Windows map make program to build.bat script
-if has("win32")
-    set makeprg=build.bat
-
-    function! CompileProject()
-        silent make
-        copen
-    endfunction
-
-    nnoremap <F1> :call CompileProject()<cr>
-    nnoremap <F2> :cn<CR>
-    nnoremap <F3> :cp<CR>
-    nnoremap <F4> :cclose<CR>
-endif
-
 " ------------------------------------------------------------------------------
 " AUTO COMMANDS
 " ------------------------------------------------------------------------------
