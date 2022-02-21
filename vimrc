@@ -27,23 +27,41 @@ set guifont=Consolas:h14
 " BASIC SETUP
 " ------------------------------------------------------------------------------
 
-" Enter the current millenium
+" Enter the current millennium
 set nocompatible
 
 " No swap and backup files
 set noswapfile
 set nobackup
+set nowritebackup
 
-" Enable syntax highliting and plugins
+" Enable syntax highlighting and plugins
 syntax enable
 filetype plugin on
 
-" Autotab for code
+" Auto indent new lines
 set autoindent
+" Use spaces instead of tabs
+set expandtab
+" Number of auto-indent spaces
+set shiftwidth=4
+" Enable smart-indent
+set smartindent
+" Enable smart-tabs
+set smarttab
+" Number of spaces per Tab
+set softtabstop=4
 
 " Set relative and absolute line number
 set relativenumber
 set number
+
+" Break lines
+set linebreak
+set showbreak=+++
+
+" Highlight matching brace
+set showmatch
 
 " Always show the status bar
 set laststatus=2
@@ -57,12 +75,18 @@ set wildmenu wildmode=full
 " Make backspace work
 set backspace=indent,eol,start
 
+" Number of undo levels
+set undolevels=1024
+
 " Use spaces instead of tabs. A tab equals to 4 spaces
 " Hitting tab vim will inset four spaces. Also indent using four spaces
-set tabstop=4 shiftwidth=4 expandtab smarttab
+set  shiftwidth=4 expandtab smarttab
 
 " Highlight all search results
-set nohlsearch
+set hlsearch
+
+" enable smart case search
+set smartcase
 
 " Do case insensitive search
 set ignorecase
@@ -72,9 +96,6 @@ set incsearch
 
 " Save before switching buffers and many other things
 set autowriteall
-
-" Don't wrap lines
-set nowrap
 
 " Set history length
 set history=1024
@@ -92,19 +113,16 @@ set belloff=all
 set hidden
 
 " netrw window proportion
-let g:netrw_winsize = 15
+let g:netrw_winsize=15
 
 " netrw disable banner
-let g:netrw_banner = 0
-
-" netrw tree starts from the current directory
-" let g:netrw_keepdir = 0
+let g:netrw_banner=0
 
 " Set color scheme
 colorscheme codedark
 
 " ------------------------------------------------------------------------------
-" STATUSLINE
+" STATUS LINE
 " ------------------------------------------------------------------------------
 
 set statusline=
@@ -119,28 +137,36 @@ set statusline+=\ %l:%c
 set statusline+=\ |
 
 " ------------------------------------------------------------------------------
+" AUTOMATICALLY LOAD LOCAL CONFIGURATION FILE AT STARTUP
+" ------------------------------------------------------------------------------
+
+if filereadable("project.vim")
+    source project.vim
+endif
+
+" ------------------------------------------------------------------------------
 " CUSTOM COMMANDS
 " ------------------------------------------------------------------------------
 
-" Source .vimrc in current directory if present
-command -nargs=0 CmdLoadLocalConfig call CmdLoadLocalConfig()
-function CmdLoadLocalConfig()
-    if filereadable(".vimrc")
-        source .vimrc
-    endif
+command -nargs=0 CmdProjectList call CmdProjectList()
+function CmdProjectList()
+    exe "vimgrep /\\%^/j src/**/*.c include/**/*.h"
 endfunction
 
-" command -nargs=1 -complete=file CmdChangeDir call CmdChangeDir(<q-args>)
-" function CmdChangeDir(path)
-"     exe "cd " . a:path
-"     call CmdLoadLocalConfig()
-" endfunction
+command -nargs=1 CmdProjectSearch call CmdProjectSearch(<q-args>)
+function CmdProjectSearch(pattern)
+    exe "vimgrep /" . a:pattern . "/j src/**/*.c include/**/*.h"
+endfunction
 
-" ------------------------------------------------------------------------------
-" AUTOMATICALLY LOAD LOCAL CONFIG AT STARTUP
-" ------------------------------------------------------------------------------
+command -nargs=0 CmdVendorList call CmdVendorList()
+function CmdVendorList()
+    exe "vimgrep /\\%^/j vendor/**/*.c vendor/**/*.h"
+endfunction
 
-call CmdLoadLocalConfig()
+command -nargs=1 CmdVendorSearch call CmdVendorSearch(<q-args>)
+function CmdVendorSearch(pattern)
+    exe "vimgrep /" . a:pattern . "/j vendor**/*.c vendor/**/*.h"
+endfunction
 
 " ------------------------------------------------------------------------------
 " MAPPINGS
@@ -149,12 +175,19 @@ call CmdLoadLocalConfig()
 " Set <leader> to space
 let mapleader = " "
 
-" Open file explorer
-nnoremap <leader>fe :Ex<cr>
-
-" Quick edit and source .gvimrc
+" Quick edit and source config file
 nnoremap <leader>ev :e $MYVIMRC<cr>
 nnoremap <leader>sv :source $MYVIMRC<cr>
+
+" List all project files (project list)
+nnoremap <leader>pl :CmdProjectList<cr>
+" Search through all project files for a pattern (project search)
+nnoremap <leader>ps :CmdProjectSearch<space>
+
+" List all vendor files (vendor list)
+nnoremap <leader>vl :CmdVendorList<cr>
+" Search through all vendor files for a pattern (vendor search)
+nnoremap <leader>vs :CmdVendorSearch<space>
 
 " Better scrolling
 " Scroll up by one line
@@ -178,11 +211,17 @@ nnoremap <C-l> <C-w>l
 " nnoremap <C-H> :vertical resize -5 <cr>
 " nnoremap <C-L> :vertical resize +5 <cr>
 
+" Use tab/shift+tab to go to next/previous buffer
+nnoremap <Tab>   :bn<cr>
+nnoremap <S-Tab> :bp<cr>
+
 " Better quickfix
-noremap <F9>  :copen<CR>
-noremap <F10> :cn<CR>
-noremap <F11> :cp<CR>
-noremap <F12> :cclose<CR>
+nnoremap <F9>  :vert botright copen 100<cr>
+nnoremap <F10> :cn<cr>
+nnoremap <F11> :cp<cr>
+nnoremap <F12> :cclose<cr>
+nnoremap <A-h> :colder<cr>
+nnoremap <A-l> :cnewer<cr>
 
 " ------------------------------------------------------------------------------
 " AUTO COMMANDS
@@ -190,9 +229,9 @@ noremap <F12> :cclose<CR>
 
 augroup vimrcgroup
     " Automatically open quickfix if there are matches
-    autocmd!
-    autocmd QuickFixCmdPost [^l]* cwindow
-    autocmd QuickFixCmdPost l*    lwindow
+    " autocmd!
+    " autocmd QuickFixCmdPost [^l]* cwindow
+    " autocmd QuickFixCmdPost l*    lwindow
 
     " Maximize on gui startup
     autocmd GUIEnter * simalt ~x
